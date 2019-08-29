@@ -1,0 +1,6 @@
+- don't repeat unnecessary operations inside of the loop
+- optim. options: -O1,2,3,S
+- stack vs. heap
+- dynamic memory allocation
+- pointer is a variable, stores an address to a memory
+    - int *x = new int*[500] (C++)
