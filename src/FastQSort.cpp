@@ -7,6 +7,7 @@ Example:
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <stdio.h>
 
 using namespace std;
 
@@ -84,13 +85,14 @@ int main(int argc, char* argv[])
 
     /* Run quick sort function on input file and write it to an output file */
     FastqSort(seq, id, pls, qual, 0, 999999);
-    ofstream fastq_out;
-    fastq_out.open("sample_sorted.fastq");
+    
+    FILE * pFile;
+
+    pFile = fopen ("out.fastq","w");
     for (int y = 0; y < 1000000; y++)
     {
-        fastq_out << id[y] << endl << seq[y] << endl << pls[y] << endl << qual[y] << endl;
+        fprintf (pFile, "%s\n%s\n%s\n%s\n", id[y].c_str(), seq[y].c_str(), pls[y].c_str(), qual[y].c_str());
     }
-    fastq_out.close();
-    cout << "Finished successfully. Sorted fastq file can be found in current directory." << endl;
+    fclose (pFile);
     return 0;
 }
