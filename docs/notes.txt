@@ -9,3 +9,10 @@
 - empty clusters
     - accept them as they are?
     - greedy algorithm
+
+- buffer, fseek, fread, char Buffer[]
+
+- output:
+<cstdio>
+fopen
+fprintf(Filename, "")
