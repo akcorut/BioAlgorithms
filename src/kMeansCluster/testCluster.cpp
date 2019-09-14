@@ -164,8 +164,8 @@ int main(int argc, char* argv[])
     double std = sqrt(var);
     
     norm(Point, rowCount, colCount, m, std);
-    for (int y = 0; y < rowCount; ++y) {
-        for (int z = 0; z < colCount+1; ++z) {
+    for (int y = 1; y < rowCount; ++y) {
+        for (int z = 1; z < colCount+1; ++z) {
             cout << Point[y][z] << "\t";
         }
     }
