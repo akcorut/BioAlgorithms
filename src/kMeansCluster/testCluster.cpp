@@ -3,8 +3,62 @@
 #include <string>
 #include <stdio.h>
 #include <sstream>
+#include <math.h>
 
 using namespace std;
+
+double findVar(double, int, int, double); 
+  
+// Function for calculating mean 
+double findMean(double **a, int row, int col) 
+{ 
+    // Calculating sum 
+    double sum = 0; 
+    for (int  i = 1; i < row; i++)  
+        for (int j = 1; j < col+1; j++) 
+            sum += a[i][j]; 
+      
+    // Returning mean 
+    return sum / (row * col); 
+} 
+  
+// Function for calculating variance 
+double findVar(double **a, int row, int col, double m) 
+{ 
+    double sum = 0; 
+    for (int i = 1; i < row; i++) { 
+        for (int j = 1; j < col+1; j++) { 
+  
+            // subtracting mean from elements 
+            a[i][j] -= m; 
+  
+            // a[i][j] = fabs(a[i][j]); 
+            // squaring each terms 
+            a[i][j] *= a[i][j]; 
+        } 
+    } 
+  
+    // taking sum 
+    for (int i = 1; i < row; i++)  
+        for (int j = 1; j < col+1; j++) 
+            sum += a[i][j];     
+  
+    return sum / (row * col); 
+} 
+
+void norm(double **a, int row, int col, double m, double std)
+{
+    for (int i = 1; i < row; i++) { 
+        for (int j = 1; j < col+1; j++) { 
+            a[i][j] = a[i][j] - m;
+        } 
+    }
+    for (int i = 1; i < row; i++) { 
+        for (int j = 1; j < col+1; j++) { 
+            a[i][j] = a[i][j]/std;
+        } 
+    } 
+}
 
 int main(int argc, char* argv[])
 {  
@@ -45,7 +99,7 @@ int main(int argc, char* argv[])
     double Yy[len];
     double Vv[len];
     string line;
-    //double am[92];
+    
     while(getline(infile, line)) {
         stringstream linestream(line);
         string genome;
@@ -71,12 +125,7 @@ int main(int argc, char* argv[])
         linestream >> Ww[kk];
         linestream >> Yy[kk];
         linestream >> Vv[kk];
-        //linestream >> aas[j][0];
-        //linestream >> aas[j][1];
         ++kk;
-            //linestream>> amino.Nn >> amino.Dd >> amino.Cc >> amino.Qq 
-            //>> amino.Ee >> amino.Gg >> amino.Hh >> amino.Ii >> amino.Ll >> amino.Kk >> amino.Mm 
-            //>> amino.Ff >> amino.Pp >> amino.Ss >> amino.Tt >> amino.Ww >> amino.Yy >> amino.Vv;
     }
     int index;
     for (int k=0; k < rowCount; k++) {
@@ -102,12 +151,25 @@ int main(int argc, char* argv[])
         Point[k][20] = Vv[index];
         ++index;
     }
-    //cout << aas[0][6];
+
     /*for (int y = 0; y < rowCount; ++y) {
-        for (int z = 0; z < colCount; ++z) {
+        for (int z = 0; z < colCount+1; ++z) {
             cout << Point[y][z] << "\t";
         }
     }*/
-    cout << Point[91][1];
+    //cout << Point[91][1];
+    
+    double m= findMean(Point, rowCount, colCount);
+    double var = findVar(Point, rowCount, colCount, m);
+    double std = sqrt(var);
+    
+    norm(Point, rowCount, colCount, m, std);
+    for (int y = 0; y < rowCount; ++y) {
+        for (int z = 0; z < colCount+1; ++z) {
+            cout << Point[y][z] << "\t";
+        }
+    }
+    //cout << std;
+
     return 0;
 }
