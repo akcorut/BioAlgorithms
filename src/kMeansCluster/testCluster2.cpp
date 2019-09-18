@@ -15,20 +15,20 @@ int i;
 int j;
 void norm(double **a, int row, int col)
 {
-    for (int j=1; j < col+1; j++) {
-        for (int i=1; i < row; i++) {
+    for (int j=0; j < col; j++) {
+        for (int i=0; i < row; i++) {
             sum += a[i][j];
             mean = sum/row;
         }
-        for (int i=1; i < row; i++) {
+        for (int i=0; i < row; i++) {
             var += ((a[i][j] - mean)*(a[i][j] - mean))/row;
             stdv = sqrt(var);
         }
         //cout << stdv << "\t" << "\n";
-        for (int i=1; i < row; i++) {
+        for (int i=0; i < row; i++) {
             a[i][j] = a[i][j] - mean;
         }
-        for (int i=1; i < row; i++) {
+        for (int i=0; i < row; i++) {
             a[i][j] = a[i][j]/stdv;
         } 
         sum = 0;
@@ -228,13 +228,13 @@ int main(int argc, char* argv[])
     ifstream infile(argv[1]);
 
     int colCount = 20;
-    int rowCount= 92;
+    int rowCount= 91;
 
     double** Point = new double*[rowCount];
     for(int i = 0; i < rowCount; ++i)
         Point[i] = new double[colCount];
 
-    int len=92;
+    int len=91;
     double Aa[len];
     double Rr[len];
     double Nn[len];
@@ -256,7 +256,8 @@ int main(int argc, char* argv[])
     double Yy[len];
     double Vv[len];
     string line;
-    
+    string unused;
+    getline(infile, unused);
     while(getline(infile, line)) {
         stringstream linestream(line);
         string genome;
@@ -286,31 +287,31 @@ int main(int argc, char* argv[])
     }
     int index;
     for (int k=0; k < rowCount; k++) {
-        Point[k][1] = Aa[index];
-        Point[k][2] = Rr[index];
-        Point[k][3] = Nn[index];
-        Point[k][4] = Dd[index];
-        Point[k][5] = Cc[index]; 
-        Point[k][6] = Qq[index];
-        Point[k][7] = Ee[index];
-        Point[k][8] = Gg[index];
-        Point[k][9] = Hh[index];
-        Point[k][10] = Ii[index];
-        Point[k][11] = Ll[index];
-        Point[k][12] = Kk[index];
-        Point[k][13] = Mm[index];
-        Point[k][14] = Ff[index];
-        Point[k][15] = Pp[index];
-        Point[k][16] = Ss[index];
-        Point[k][17] = Tt[index];
-        Point[k][18] = Ww[index]; 
-        Point[k][19] = Yy[index];
-        Point[k][20] = Vv[index];
+        Point[k][0] = Aa[index];
+        Point[k][1] = Rr[index];
+        Point[k][2] = Nn[index];
+        Point[k][3] = Dd[index];
+        Point[k][4] = Cc[index]; 
+        Point[k][5] = Qq[index];
+        Point[k][6] = Ee[index];
+        Point[k][7] = Gg[index];
+        Point[k][8] = Hh[index];
+        Point[k][9] = Ii[index];
+        Point[k][10] = Ll[index];
+        Point[k][11] = Kk[index];
+        Point[k][12] = Mm[index];
+        Point[k][13] = Ff[index];
+        Point[k][14] = Pp[index];
+        Point[k][15] = Ss[index];
+        Point[k][16] = Tt[index];
+        Point[k][17] = Ww[index]; 
+        Point[k][18] = Yy[index];
+        Point[k][19] = Vv[index];
         ++index;
     }
 
     /*for (int y = 0; y < rowCount; ++y) {
-        for (int z = 0; z < colCount+1; ++z) {
+        for (int z = 0; z < colCount; ++z) {
             cout << Point[y][z] << "\t";
         }
     }*/
