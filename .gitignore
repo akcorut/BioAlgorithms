@@ -6,3 +6,5 @@ sample1M.fastq.gz
 sorted.fastq
 *.fastq
 *.fasta
+outAlignment.txt
+nwTest2*
