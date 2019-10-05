@@ -1,3 +1,16 @@
+/* 
+Usage:
+This program takes two files in fasta format as inputs and returns
+an alignment file as output. User is also expected to define the 
+required scores for mismatch, match and gap penalty from command line
+by typing them.
+
+./nwAlign <input fasta sequence 1> <input fasta sequence 2>
+
+Example:
+./nwAlign /path/to/RpoB-B.subtilis.fasta /path/to/RpoB-E.coli.fasta
+*/
+
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -81,7 +94,7 @@ void nwAlign(int ** sMatrix, int ** tbMatrix, string seqFirst, string seqSecond,
   	}
 
 	int k=0;
-	while(!(lengthFirst==0&&lengthSecond==0)){
+	while(!(lengthFirst == 0 && lengthSecond == 0)){
 		switch (tbMatrix[lengthFirst][lengthSecond])
 		{
 			// If the second seqeunce aligned with a gap
