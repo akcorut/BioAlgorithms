@@ -9,18 +9,37 @@
 #include <iomanip>
 #include <stdio.h>
 #include <vector>
+#include <math.h>
 
 using namespace std;
+
+double getGC(vector <string> dnaSeq){
+	dnaSeq = dnaSeq;
+
+	double GCcount=0;
+	for(int i=0;i<dnaSeq.size();i++){
+		for(int j=0;j<dnaSeq[0].size();j++){
+			if(dnaSeq[i][j]=='G' || dnaSeq[i][j]== 'C'){
+				GCcount += 1;
+			}
+		}
+	}
+	double sizeGeno=dnaSeq.size()*dnaSeq[0].size();
+	double GCfreq = (GCcount/sizeGeno);
+
+	return GCfreq;
+}
 
 void freqMatrix(vector <string> motifSeq, vector <string> dnaSeq)
 {
 	motifSeq = motifSeq;
 	dnaSeq = dnaSeq;	
-	//int fMatrix[motifSeq[0].size()+1][5];
-	int** fMatrix = new int*[motifSeq[0].size()+1];
+	double fMatrix[motifSeq[0].size()+1][5];
+	/*double** fMatrix = new double*[motifSeq[0].size()+1];
 	for(int i = 0; i < motifSeq[0].size()+1; ++i)
-    	fMatrix[i] = new int[5];
+    	fMatrix[i] = new double[5];*/
 
+	// Frequency matrix
 	for(int i=1; i<=motifSeq[0].size(); i++){
     	fMatrix[i][0] = i;
   	}
@@ -44,7 +63,7 @@ void freqMatrix(vector <string> motifSeq, vector <string> dnaSeq)
 		}
 	}
 
-	for(int j=0; j<=motifSeq[0].size();j++){
+	/*for(int j=0; j<=motifSeq[0].size();j++){
 		for (int i=0; i<=4;i++){
 			cout << fMatrix[j][i] << "\t";
 			if (i==4)
@@ -52,9 +71,103 @@ void freqMatrix(vector <string> motifSeq, vector <string> dnaSeq)
 				cout<< "\n";
 			}
 		}
+	}*/
+	
+	// Add pseudocounts
+	double pseCount = 0.25;
+
+	for(int j=1; j<=motifSeq[0].size();j++){
+		for (int i=1; i<=4;i++){
+			fMatrix[j][i] += pseCount;
+		}
+	}
+
+	// Probability matrix
+	double pMatrix[motifSeq[0].size()+1][5];
+	for(int i=1; i<=motifSeq[0].size(); i++){
+    	pMatrix[i][0] = i;
+  	}
+	pMatrix[0][1] = 'A';
+	pMatrix[0][2] = 'T';
+	pMatrix[0][3] = 'G';
+	pMatrix[0][4] = 'C';
+
+	//int numSeq = motifSeq[0].size()*motifSeq.size();
+	for(int j=1; j<=motifSeq[0].size();j++){
+		for (int i=1; i<=4;i++){
+			pMatrix[j][i] = fMatrix[j][i]/motifSeq.size();
+		}
+	}	
+	
+	/*for(int j=0; j<=motifSeq[0].size();j++){
+		for (int i=0; i<=4;i++){
+			cout << pMatrix[j][i] << "\t";
+			if (i==4)
+			{
+				cout<< "\n";
+			}
+		}
+	}*/
+
+	/*double GCcount=0;
+	for(int i=0;i<dnaSeq.size();i++){
+		for(int j=0;j<dnaSeq[0].size();j++){
+			if(dnaSeq[i][j]=='G' || dnaSeq[i][j]== 'C'){
+				GCcount += 1;
+			}
+		}
+	}
+	double sizeGeno=dnaSeq.size()*dnaSeq[0].size();
+	cout << endl << GCcount;
+	cout << endl << sizeGeno;
+	double GCfreq = (GCcount/sizeGeno);*/
+	
+	double GCfreq = getGC(dnaSeq);
+	//cout << endl << GCfreq;
+	double freqG, freqC, freqA, freqT;
+	
+	freqG=GCfreq/2;
+	freqC=GCfreq/2;
+	freqA=(1-GCfreq)/2;
+	freqT=(1-GCfreq)/2;
+
+	//cout << endl << freqG << endl;
+	//cout << endl << freqC << endl;
+	//cout << endl << freqA << endl;
+	//cout << endl << freqT << endl;
+
+	double PSSM[motifSeq[0].size()+1][5];
+	
+	for(int i=1; i<=motifSeq[0].size(); i++){
+		PSSM[i][0] = i;
 	}
 	
+	PSSM[0][1] = 'A';
+	PSSM[0][2] = 'T';
+	PSSM[0][3] = 'G';
+	PSSM[0][4] = 'C';
+
+	for(int j=1; j<=motifSeq[0].size();j++){
+		PSSM[j][1] = log(pMatrix[j][1]/freqA);
+		PSSM[j][2] = log(pMatrix[j][2]/freqT);
+		PSSM[j][3] = log(pMatrix[j][3]/freqG);
+		PSSM[j][4] = log(pMatrix[j][4]/freqC);
+	}
+
+	cout << endl;
+	
+	for(int j=0; j<=motifSeq[0].size();j++){
+		for (int i=0; i<=4;i++){
+			cout << PSSM[j][i] << "\t";
+			if (i==4)
+			{
+				cout<< "\n";
+			}
+		}
+	}
+
 }
+
 
 int main(int argc, char **argv) 
 {	
