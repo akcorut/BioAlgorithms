@@ -101,7 +101,7 @@ void callPSSM(vector <string> motifSeq, vector <string> dnaSeq, int cutoff)
 	for (int i=0; i<=4;i++){
 			fout1 << header[i] << "\t";
 	}
-	fout1 << endl;
+	fout1 << "\n";
 	for(int j=1; j<=motifSeq[0].size();j++){
 		for (int i=0; i<=4;i++){
 			fout1 << fMatrix[j][i] << "\t";
@@ -144,7 +144,7 @@ void callPSSM(vector <string> motifSeq, vector <string> dnaSeq, int cutoff)
 	for (int i=0; i<=4;i++){
 			fout2 << header[i] << "\t";
 	}
-	fout2 << endl;
+	fout2 << "\n";
 	for(int j=1; j<=motifSeq[0].size();j++){
 		for (int i=0; i<=4;i++){
 			fout2 << pMatrix[j][i] << "\t";
@@ -187,7 +187,7 @@ void callPSSM(vector <string> motifSeq, vector <string> dnaSeq, int cutoff)
 	for (int i=0; i<=4;i++){
 			fout3 << header[i] << "\t";
 	}
-	fout3 << endl;
+	fout3 << "\n";
 	for(int j=1; j<=motifSeq[0].size();j++){
 		for (int i=0; i<=4;i++){
 			fout3 << PSSM[j][i] << "\t";
@@ -220,7 +220,7 @@ void callPSSM(vector <string> motifSeq, vector <string> dnaSeq, int cutoff)
 	
 	ofstream fout4("motifScore.txt");
 	for(int i=0;i<numMotifs;i++){
-		fout4 << "Motif Sequence: " << motifSeq[i] << ",	" << "Score: " << score[i] << endl;
+		fout4 << "Motif Sequence: " << motifSeq[i] << ",	" << "Score: " << score[i] << "\n";
 	}
 	fout4.close();
 
@@ -272,7 +272,7 @@ void callPSSM(vector <string> motifSeq, vector <string> dnaSeq, int cutoff)
 	ofstream fout5("results.txt");
 	for (int i=0; i<dnaMotif.size(); i++){ 
         if(dnaMotif[i].second>cutoff){
-			fout5 << "Start: " << positions[i].first << ", " << "End: " << positions[i].second << ", " << "Sequence: " << dnaMotif[i].first << ", " << "Score: " << dnaMotif[i].second << endl;     
+			fout5 << "Start: " << positions[i].first << ", " << "End: " << positions[i].second << ", " << "Sequence: " << dnaMotif[i].first << ", " << "Score: " << dnaMotif[i].second << "\n";     
     	}	
 	}
 	fout5.close();
@@ -318,7 +318,7 @@ void callPSSM(vector <string> motifSeq, vector <string> dnaSeq, int cutoff)
 	ofstream fout6("resultsReverse.txt");
 	for (int i=0; i<dnaMotifRev.size(); i++){ 
         if(dnaMotifRev[i].second>cutoff){
-			fout6 << "Start: " << positionsRev[i].first << ", " << "End: " << positionsRev[i].second << ", " << "Sequence: " << dnaMotifRev[i].first << ", " << "Score: " << dnaMotifRev[i].second << endl;     
+			fout6 << "Start: " << positionsRev[i].first << ", " << "End: " << positionsRev[i].second << ", " << "Sequence: " << dnaMotifRev[i].first << ", " << "Score: " << dnaMotifRev[i].second << "\n";     
     	}	
 	}
 	fout6.close();
@@ -361,12 +361,12 @@ int main(int argc, char **argv)
 		}
 	}
     
-    cout << dnaSeq.size() << endl;
-	cout << motifSeq[0].size() << endl;
+    //cout << dnaSeq.size() << endl;
+	//cout << motifSeq[0].size() << endl;
 
-	cout<<"The dimension of the motif data is ";
-    cout<<motifSeq.size()<<" x ";
-    cout<<motifSeq[0].size()<<endl;
+	//cout<<"The dimension of the motif data is ";
+    //cout<<motifSeq.size()<<" x ";
+    //cout<<motifSeq[0].size()<<endl;
 
 	callPSSM(motifSeq, dnaSeq, cutoff);
 
