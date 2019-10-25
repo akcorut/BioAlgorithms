@@ -57,7 +57,7 @@ void getReverse(char seq[])
 }
 
 
-void freqMatrix(vector <string> motifSeq, vector <string> dnaSeq, int cutoff)
+void callPSSM(vector <string> motifSeq, vector <string> dnaSeq, int cutoff)
 {
 	motifSeq = motifSeq;
 	dnaSeq = dnaSeq;
@@ -95,8 +95,14 @@ void freqMatrix(vector <string> motifSeq, vector <string> dnaSeq, int cutoff)
 			}
 		}
 	}
+	string header[5] = {" ", "A", "T", "G", "C"};
+
 	ofstream fout1("frequencyMatrix.txt");
-	for(int j=0; j<=motifSeq[0].size();j++){
+	for (int i=0; i<=4;i++){
+			fout1 << header[i] << "\t";
+	}
+	fout1 << endl;
+	for(int j=1; j<=motifSeq[0].size();j++){
 		for (int i=0; i<=4;i++){
 			fout1 << fMatrix[j][i] << "\t";
 			if (i==4)
@@ -135,7 +141,11 @@ void freqMatrix(vector <string> motifSeq, vector <string> dnaSeq, int cutoff)
 	}	
 	
 	ofstream fout2("probabilityMatrix.txt");
-	for(int j=0; j<=motifSeq[0].size();j++){
+	for (int i=0; i<=4;i++){
+			fout2 << header[i] << "\t";
+	}
+	fout2 << endl;
+	for(int j=1; j<=motifSeq[0].size();j++){
 		for (int i=0; i<=4;i++){
 			fout2 << pMatrix[j][i] << "\t";
 			if (i==4)
@@ -174,7 +184,11 @@ void freqMatrix(vector <string> motifSeq, vector <string> dnaSeq, int cutoff)
 	}
 	
 	ofstream fout3("PSSM.txt");
-	for(int j=0; j<=motifSeq[0].size();j++){
+	for (int i=0; i<=4;i++){
+			fout3 << header[i] << "\t";
+	}
+	fout3 << endl;
+	for(int j=1; j<=motifSeq[0].size();j++){
 		for (int i=0; i<=4;i++){
 			fout3 << PSSM[j][i] << "\t";
 			if (i==4)
@@ -354,7 +368,7 @@ int main(int argc, char **argv)
     cout<<motifSeq.size()<<" x ";
     cout<<motifSeq[0].size()<<endl;
 
-	freqMatrix(motifSeq, dnaSeq, cutoff);
+	callPSSM(motifSeq, dnaSeq, cutoff);
 
     return 0;
 }
