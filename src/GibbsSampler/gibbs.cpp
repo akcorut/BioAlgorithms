@@ -232,7 +232,7 @@ void getMotifScore(vector <string>& motifSeq, int motifSize, double PSSM[][5], d
 	}
 }
 
-void findMotif(vector<string>& dnaSeq, vector<string>& motifSeq, int motifSize, int targetIndex, double PSSM[][5], vector<double>& tempScore)
+void findMotif(vector<string>& dnaSeq, vector<string>& motifSeq, int motifSize, int targetIndex, double PSSM[][5], vector<pair<int, int> >& newPositions)
 {	
 	random_device ran_dev;
 	mt19937 gen(ran_dev());
@@ -332,7 +332,10 @@ void findMotif(vector<string>& dnaSeq, vector<string>& motifSeq, int motifSize, 
 	//cout << window << endl;
 	//vector<double> tempScore;
 	motifSeq[targetIndex] = dnaMotif[window].first;
-	tempScore.push_back(dnaMotif[window].second);
+	//tempScore.push_back(dnaMotif[window].second);
+
+	newPositions[targetIndex].first = positions[window].first+1;
+	newPositions[targetIndex].second = positions[window].second+1;
 
 	expScore.clear();
 	probs.clear();
@@ -396,7 +399,7 @@ int main(int argc, char **argv)
 	/*for (string x:motifSeq){ 
         cout << x << endl;
     }*/
-	ofstream fout3("finalScores.txt");
+	ofstream fout3("finalResults.txt");
 	double PSSM[motifSeq[0].size()+1][5];
 	vector<double> tempScore;
 	//double currentScore;
@@ -404,13 +407,14 @@ int main(int argc, char **argv)
 	double finalScore =0.0;
 	vector<string> finalMotif;
 
-	
+	vector<pair<int, int> > newPositions(motifSeq.size(), make_pair(0, 0));
+	vector<pair<int, int> > lastPositions;
 
 	for (int j=0; j<=500; j++){
 		double currentScore =0.0;
 		for (int i=0; i<motifSeq.size(); i++){
 			getPSSM(dnaSeq, motifSeq, motifSize, i, PSSM);
-			findMotif(dnaSeq, motifSeq, motifSize, i, PSSM, tempScore);
+			findMotif(dnaSeq, motifSeq, motifSize, i, PSSM, newPositions);
 			//currentScore += tempScore[i];
 			//fout3 << currentScore << endl;
 		}
@@ -422,15 +426,19 @@ int main(int argc, char **argv)
 		{
 			finalScore = currentScore;
 			finalMotif = motifSeq;
+			lastPositions = newPositions;
 		}
 		fout3 << finalScore << endl;
 	}
 
-	
-	for(string y:finalMotif){
+	/*for(string y:finalMotif){
 		fout3<<y<<endl;
 	}
-	fout3 << finalScore << endl;
-	
+	fout3 << finalScore << endl;*/
+
+	for (int i=0; i<finalMotif.size(); i++){ 
+        fout3 << "Start: " << lastPositions[i].first << "\t" << "End: " << lastPositions[i].second<< "\t" << "Motif: " << finalMotif[i]<< endl;
+    }
+	fout3 << "Final Score: " << finalScore << endl;
     return 0;
 }
