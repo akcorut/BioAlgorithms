@@ -21,13 +21,20 @@ Example:
 #include <map>
 #include <iomanip>
 #include <stdio.h>
+#include <vector>
 
 using namespace std;
 
+void reverseAlignment(string& alignment) 
+{ 
+	int lastIndex = alignment.length()-1;
+    for (int i=0; i<alignment.length()/2; i++){
+		swap(alignment[i], alignment[lastIndex-i]);
+	}
+}
+
 void initMatrices(int ** sMatrix, int ** tbMatrix, string seqFirst, string seqSecond, int gap)
 {	
-	seqFirst = seqFirst;
-	seqSecond = seqSecond;
 
 	int lengthFirst = seqFirst.length(); // Get length of the first sequence
 	int lengthSecond = seqSecond.length(); // Get length of the second sequence
@@ -45,16 +52,27 @@ void initMatrices(int ** sMatrix, int ** tbMatrix, string seqFirst, string seqSe
     	sMatrix[0][i] = sMatrix[0][i-1] + gap;
     	tbMatrix[0][i]=2;
   	}
+
+	ofstream fout3("InitScoreMatrix.txt");
+	for(int i = 0; i <= lengthFirst; i++){
+      	for(int j = 0; j < lengthSecond; j++) {
+        	fout3 << sMatrix[i][j] << '\t';
+    	}
+    	fout3 << sMatrix[i][lengthSecond] << '\n';
+    }
+
+	ofstream fout5("inittbmatrix.csv");
+	for(int i = 0; i <= lengthFirst; i++){
+      	for(int j = 0; j < lengthSecond; j++) {
+        	fout5 << tbMatrix[i][j] << ',';
+    	}
+    	fout5 << tbMatrix[i][lengthSecond] << '\n';
+    }
 }
 
-void nwAlign(int ** sMatrix, int ** tbMatrix, string seqFirst, string seqSecond, string& alignmentFirst, string& alignmentSecond, int match, int mismatch, int gap)
-{
-	seqFirst = seqFirst;
-	seqSecond = seqSecond;
-	
-	tbMatrix = tbMatrix;
-	sMatrix = sMatrix;	
-	
+void nwAlign(int ** sMatrix, int ** tbMatrix, string& seqFirst, string& seqSecond, string& alignmentFirst, string& alignmentSecond, int match, int mismatch, int gap)
+{	
+	int diagScore, verScore, horScore;
 	int lengthFirst = seqFirst.length(); // Get length of the first sequence
 	int lengthSecond = seqSecond.length(); // Get length of the second sequence
 
@@ -84,60 +102,75 @@ void nwAlign(int ** sMatrix, int ** tbMatrix, string seqFirst, string seqSecond,
 			{
         		sMatrix[i][j] = verScore;
         		tbMatrix[i][j]=2;
-      		
 			}else
 			{
         		sMatrix[i][j] = horScore;
         		tbMatrix[i][j]=0;
       		}
-    	}	
+    	}
   	}
 
+	ofstream fout2("scorematrix.csv");
+	for(int i = 0; i <= lengthFirst; i++){
+      	for(int j = 0; j < lengthSecond; j++) {
+        	fout2 << sMatrix[i][j] << ',';
+    	}
+    	fout2 << sMatrix[i][lengthSecond] << '\n';
+    }
+
+	ofstream fout4("tbmatrix.csv");
+	for(int i = 0; i <= lengthFirst; i++){
+      	for(int j = 0; j < lengthSecond; j++) {
+        	fout4 << tbMatrix[i][j] << ',';
+    	}
+    	fout4 << tbMatrix[i][lengthSecond] << '\n';
+    }
+	
 	int k=0;
 	while(!(lengthFirst == 0 && lengthSecond == 0)){
 		switch (tbMatrix[lengthFirst][lengthSecond])
 		{
 			// If the second seqeunce aligned with a gap
 			case 2:     alignmentFirst += "-";
-                        alignmentSecond += seqSecond.at(lengthSecond-1);
+                        alignmentSecond += seqSecond[lengthSecond-1];
 						lengthSecond--;
                         break;
 
 			// If both seqeunces are aligned
-        	case 1:     alignmentFirst += seqFirst.at(lengthFirst-1);
-                        alignmentSecond += seqSecond.at(lengthSecond-1);
+        	case 1:     alignmentFirst += seqFirst[lengthFirst-1];
+                        alignmentSecond += seqSecond[lengthSecond-1];
 						lengthFirst--; lengthSecond--;
                         break;
 
 			// If the first seqeunce aligned with a gap
-        	case 0:     alignmentFirst += seqFirst.at(lengthFirst-1);
-						alignmentSecond += "-";
+        	case 0:     alignmentSecond += "-";
+						alignmentFirst += seqFirst[lengthFirst-1];			
 						lengthFirst--;
 		}
 		k++;
 	}
+
 	// Trace aligned sequences by reversing them
-	reverse(alignmentFirst.begin(), alignmentFirst.end());
-    reverse(alignmentSecond.begin(), alignmentSecond.end());
+	reverseAlignment(alignmentFirst);
+    reverseAlignment(alignmentSecond);
 }
 
 int needlemanWunsch(string seqFirst, string seqSecond, string& alignmentFirst, string& alignmentSecond, int match, int mismatch, int gap)
 {
-	seqFirst = seqFirst;
-	seqSecond = seqSecond;
+	
 	
 	int lengthFirst = seqFirst.length(); // Get length of the first sequence
     int lengthSecond = seqSecond.length(); // Get length of the second sequence
 
 	// Dynamically allocate the scoring matrix
-	int **sMatrix = new int *[lengthSecond+1];
-    for(int i = 0; i <= lengthSecond; i++)  
-        sMatrix[i] = new int [lengthFirst];
+	int **sMatrix = new int *[lengthFirst+1];
+    for(int i = 0; i <= lengthFirst; i++)  
+        sMatrix[i] = new int [lengthSecond+1];
 	
 	// Dynamically allocate the traceback matrix
-    int **tbMatrix = new int *[lengthSecond+1];
-    for(int i = 0; i <= lengthSecond; i++) 
-        tbMatrix[i] = new int [lengthFirst];
+    int **tbMatrix = new int *[lengthFirst+1];
+    for(int i = 0; i <= lengthFirst; i++) 
+        tbMatrix[i] = new int [lengthSecond+1];
     
 	initMatrices(sMatrix, tbMatrix, seqFirst, seqSecond, gap); // Call the function for initializing the matrices
     nwAlign(sMatrix, tbMatrix, seqFirst, seqSecond, alignmentFirst, alignmentSecond, match, mismatch, gap); // Call the alignment function
@@ -147,10 +180,10 @@ int needlemanWunsch(string seqFirst, string seqSecond, string& alignmentFirst, s
 
 void printAlignment(string& alignmentFirst, string& alignmentSecond)
 {
-		char signs[alignmentFirst.length()];
+		char *signs = new char[alignmentFirst.length()];
 		// Generate the signs for the alignment output
 		for(int i=0; i<=alignmentFirst.length(); i++){
-			if(alignmentFirst[i] == alignmentSecond[i]){
+			if(toupper(alignmentFirst[i]) == toupper(alignmentSecond[i])){
 				signs[i]='|'; // If match
 			}else if(alignmentFirst[i] == '-' || alignmentSecond[i] == '-'){
 				signs[i]=' '; // If gap
@@ -184,14 +217,14 @@ int main(int argc, char **argv)
 {	
 	int match,mismatch,gap;
   	
-	cout<<"Enter the score for matches: ";
+	/*cout<<"Enter the score for matches: ";
   	cin>>match;
   	
 	cout<<"Enter the score for mismatches: ";
   	cin>>mismatch;
   	
 	cout<<"Enter the gap penalty: ";
-  	cin>>gap;
+  	cin>>gap;*/
 
 	// File Parsing.
 	if (argc > 1) {
@@ -223,6 +256,10 @@ int main(int argc, char **argv)
 		}
 	}
     
+	match = atoi(argv[3]);  
+    mismatch = atoi(argv[4]); 
+    gap = atoi(argv[5]); 
+
     cout << "Length of the first sequence: " << seqFirst.length() << endl;
     cout << "Length of the second sequence: " << seqSecond.length() << endl;
 	
@@ -230,8 +267,15 @@ int main(int argc, char **argv)
 	string alignmentFirst;
     string alignmentSecond;
     
+	for (int i=0; i < seqFirst.length(); i++)
+		seqFirst[i] = toupper(seqFirst[i]);
+	
+	for (int i=0; i < seqSecond.length(); i++)
+		seqSecond[i] = toupper(seqSecond[i]);
+
     needlemanWunsch(seqFirst, seqSecond, alignmentFirst, alignmentSecond, match, mismatch, gap);
     printAlignment(alignmentFirst, alignmentSecond);
 	
+	cout << gap;
 	return 0;
 }
