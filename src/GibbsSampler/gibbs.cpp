@@ -1,3 +1,16 @@
+/* 
+Author: Adnan Kivanc Corut
+Usage:
+This program takes one input fasta file and returns
+2 output files including matrices and final motifs with score and locations. 
+User is also expected to define the motif length from command line.
+
+./gibbs <input fasta>
+
+Example:
+./gibbs ../../data/GibbsSampler/H.pyloriRpoN-sequences-10-300nt.fasta
+*/
+
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -14,9 +27,7 @@
 
 using namespace std;
 
-
-
-double getGC(vector <string> dnaSeq)
+double getGC(vector <string> dnaSeq) // Function to get GC freq of given dna sequence
 {
 
 	double GCcount=0;
@@ -33,7 +44,8 @@ double getGC(vector <string> dnaSeq)
 	return GCfreq;
 }
 
-void getRandomMotif(vector <string>& dnaSeq, vector <string>& motifSeq, int motifSize)
+// Function to randomly select motifs with given size
+void getRandomMotif(vector <string>& dnaSeq, vector <string>& motifSeq, int motifSize, vector <int>& randPos)
 {
 	random_device ran_dev;
 	mt19937 gen(ran_dev());
@@ -44,11 +56,20 @@ void getRandomMotif(vector <string>& dnaSeq, vector <string>& motifSeq, int moti
     for(int k=0; k < dnaSeq.size(); k++){
 		int i = dist1(gen);
 		cout << i << endl;
+		randPos.push_back(i);
         motifSeq.push_back(dnaSeq[k].substr(i,motifSize));
     }
 }
 
-
+// Function to change motif size and/or start position of th motifs
+void changeMotifSize(vector <string>& dnaSeq, vector <string>& newMotifs, int motifSize, vector <int>& startPos, int i, int j)
+{
+    
+	for(int k=0; k < dnaSeq.size(); k++){
+        newMotifs.push_back(dnaSeq[k].substr(startPos[k]+i,motifSize+j));
+    }
+	
+}
 
 void getPSSM(vector<string>& dnaSeq, vector<string>& motifSeq, int motifSize, int skipSeq, double PSSM[][5])
 {
@@ -157,7 +178,10 @@ void getPSSM(vector<string>& dnaSeq, vector<string>& motifSeq, int motifSize, in
 	}
 	fout2<< "\n";
 
-	double GCfreq = getGC(dnaSeq);
+	vector <string> seqToFreq;
+	seqToFreq.push_back(dnaSeq[skipSeq]);
+
+	double GCfreq = getGC(seqToFreq);
 	double freqG, freqC, freqA, freqT;
 	
 	freqG=GCfreq/2;
@@ -201,38 +225,38 @@ void getPSSM(vector<string>& dnaSeq, vector<string>& motifSeq, int motifSize, in
 
 }
 
-void getMotifScore(vector <string>& motifSeq, int motifSize, double PSSM[][5], double& currentScore)
+void getMotifScore(vector <string>& motifSeq, int motifSize, double PSSM[][5], double& motifScore, int targetSeq)
 {
-	int numMotifs = motifSeq.size();
+	//int numMotifs = motifSeq.size();
 
-	double score[numMotifs];
+	double score;
 	
-	for(int i=0;i<numMotifs;i++){
-		for(int j=0;j<motifSize;j++){
-			if(motifSeq[i][j]=='A' || motifSeq[i][j]=='a'){
-				score[i]+=PSSM[j+1][1];
-			}else if(motifSeq[i][j]=='T' || motifSeq[i][j]=='t'){
-				score[i]+=PSSM[j+1][2];
-			}else if(motifSeq[i][j]=='G' || motifSeq[i][j]=='g'){
-				score[i]+=PSSM[j+1][3];
-			}else if(motifSeq[i][j]=='C' || motifSeq[i][j]=='c'){
-				score[i]+=PSSM[j+1][4];
-			}
+	
+	for(int j=0;j<motifSeq[0].size();j++){
+		if(motifSeq[targetSeq][j]=='A' || motifSeq[targetSeq][j]=='a'){
+			score+=PSSM[j+1][1];
+		}else if(motifSeq[targetSeq][j]=='T' || motifSeq[targetSeq][j]=='t'){
+			score+=PSSM[j+1][2];
+		}else if(motifSeq[targetSeq][j]=='G' || motifSeq[targetSeq][j]=='g'){
+			score+=PSSM[j+1][3];
+		}else if(motifSeq[targetSeq][j]=='C' || motifSeq[targetSeq][j]=='c'){
+			score+=PSSM[j+1][4];
 		}
 	}
 	
+	
 	ofstream fout5("motifScore.txt");
-	for(int i=0;i<numMotifs;i++){
-		fout5 << "Motif Sequence: " << motifSeq[i] << ",	" << "Score: " << score[i] << "\n";
-	}
+	
+	fout5 << "Motif Sequence: " << motifSeq[targetSeq] << ",	" << "Score: " << score << "\n";
+	
 	fout5.close();
 
-	for(int i=0;i<numMotifs;i++){
-		currentScore += score[i];
-	}
+	
+	motifScore = score;
+	
 }
 
-void findMotif(vector<string>& dnaSeq, vector<string>& motifSeq, int motifSize, int targetIndex, double PSSM[][5], vector<pair<int, int> >& newPositions)
+void findMotif(vector<string>& dnaSeq, vector<string>& motifSeq, int motifSize, int targetIndex, double PSSM[][5], vector<pair<int, int> >& newPositions, int shift, vector<int>& startPos)
 {	
 	random_device ran_dev;
 	mt19937 gen(ran_dev());
@@ -245,7 +269,7 @@ void findMotif(vector<string>& dnaSeq, vector<string>& motifSeq, int motifSize, 
 	}
 	
 	int n = dnaSeq[targetIndex].size();
-	int m = motifSize;
+	int m = motifSeq[0].size();
 
 	vector<pair<string, double> > dnaMotif(n - m + 1);
 	vector<pair<int, int> > positions(n - m + 1);
@@ -287,24 +311,15 @@ void findMotif(vector<string>& dnaSeq, vector<string>& motifSeq, int motifSize, 
 	}
 
 	double totalScore = 0.0;
-	/*for (int i=0; i<dnaMotif.size(); i++){
-		totalScore +=  exp(dnaMotif[i].second);
-	}
-	cout<< totalScore;*/
+	
 
 	vector<double> expScore;
 
 	for (int i=0; i<dnaMotif.size(); i++){
-		expScore.push_back(exp(dnaMotif[i].second));
+		expScore.push_back(exp2(dnaMotif[i].second));
 		totalScore += expScore[i];
 	}
-	//cout<< totalScore;
-
-
-	/*for (int i=0; i<dnaMotif.size(); i++){
-		cout << "Start: " << positions[i].first << ", " << "End: " << positions[i].second << ", " << "Sequence: " << dnaMotif[i].first << ", " << "Score: " << dnaMotif[i].second << "\n";     
-    	
-	}*/
+	
 
 	
 	uniform_real_distribution<> dist2(0.0, 1.0);
@@ -318,32 +333,29 @@ void findMotif(vector<string>& dnaSeq, vector<string>& motifSeq, int motifSize, 
       	tempSum=tempSum+(expScore[i]/totalScore);
 	}
 	
-	/*for (int i=0; i<probs.size(); i++){
-		cout << probs[i] << "\t";
-	}
-	cout << endl;*/
-	//fout4.close();
 	
 	int window = 0;
 	while (probs[window] < randNum){
 		window++;
 	}
-	//cout << "\t" << positions[window].first << "\t" << dnaMotif[window].first << endl;
-	//cout << window << endl;
-	//vector<double> tempScore;
-	motifSeq[targetIndex] = dnaMotif[window].first;
-	//tempScore.push_back(dnaMotif[window].second);
-
-	newPositions[targetIndex].first = positions[window].first+1;
-	newPositions[targetIndex].second = positions[window].second+1;
-
+	
+	bool outOfindex = false;
+	if (window+shift < 0 || window+shift >= n - m + 1)
+		outOfindex = true; 
+	else 
+		outOfindex = false;  
+	if(!outOfindex){
+		motifSeq[targetIndex] = dnaMotif[window+shift].first;
+	
+		newPositions[targetIndex].first = positions[window+shift].first+1;
+		newPositions[targetIndex].second = positions[window+shift].second+1;
+	}
+	
+	startPos[targetIndex] = positions[window+shift].first;
+	
 	expScore.clear();
 	probs.clear();
-	//tempScore.clear();
-	/*cout << endl;
-	for (string x:motifSeq){ 
-        cout << x << endl;
-    }*/
+	
 }
 
 int main(int argc, char **argv) 
@@ -393,50 +405,124 @@ int main(int argc, char **argv)
     	for (auto &j : i)      
         	j = toupper(j);
 
+	vector <int> randPos;
 	vector<string> motifSeq;
-	getRandomMotif(dnaSeq, motifSeq, motifSize);
+
+	getRandomMotif(dnaSeq, motifSeq, motifSize, randPos);
 	
-	/*for (string x:motifSeq){ 
-        cout << x << endl;
-    }*/
+	/*vector<string> testM;
+	changeMotifSize(dnaSeq, testM, motifSize, randPos, 0, 2);
+	for(string h:testM){
+		cout<<h<<endl;
+	}*/
+	
 	ofstream fout3("finalResults.txt");
 	double PSSM[motifSeq[0].size()+1][5];
-	vector<double> tempScore;
-	//double currentScore;
+	//vector<double> tempScore;
 	
 	double finalScore =0.0;
 	vector<string> finalMotif;
+	//vector<string> sMotif;
+	//vector<string> bMotif;
+
+	vector<int> startPos(motifSeq.size(), 0);
 
 	vector<pair<int, int> > newPositions(motifSeq.size(), make_pair(0, 0));
 	vector<pair<int, int> > lastPositions;
+	double motifScore;
+	int iter = 0;
+	
+	while(iter < 300){
+		for (int j=0; j<=300; j++){
+			double currentScore =0.0;
+			//double tmpScore =0.0;
+			//double tmpScore2 =0.0;
+			for (int i=0; i<motifSeq.size(); i++){
+				getPSSM(dnaSeq, motifSeq, motifSize, i, PSSM);
+				findMotif(dnaSeq, motifSeq, motifSize, i, PSSM, newPositions, 0, startPos);
+				//cout << motifSeq[i] << endl;
+				//currentScore += tempScore[i];
+				//fout3 << currentScore << endl;
+			}
+			if (j % 5==0) {
+				for (int i=0; i<motifSeq.size(); i++){
+					getPSSM(dnaSeq, motifSeq, motifSize, i, PSSM);
+					findMotif(dnaSeq, motifSeq, motifSize, i, PSSM, newPositions, 1, startPos);
+				}
+			}
+			if (j % 12==0) {
+				for (int i=0; i<motifSeq.size(); i++){
+					getPSSM(dnaSeq, motifSeq, motifSize, i, PSSM);
+					findMotif(dnaSeq, motifSeq, motifSize, i, PSSM, newPositions, -1, startPos);
+				}
+			}
+			/*if (j % 7==0) {
+				changeMotifSize(dnaSeq, sMotif, motifSize, startPos, 0, -2);
+				double tempPSSM[sMotif[0].size()+1][5];
+				for (int k=0; k<motifSeq.size(); k++){
+					getPSSM(dnaSeq, sMotif, motifSize, k, tempPSSM);
+					getMotifScore(sMotif, motifSize, tempPSSM, motifScore, k);
+					//cout << motifScore << endl;
+					tmpScore += motifScore;
+				}
+			}*/
+			/*if (j % 13==0) {
+				changeMotifSize(dnaSeq, bMotif, motifSize, startPos, 0, 2);
+				double tempPSSM[bMotif[0].size()+1][5];
+				for (int k=0; k<motifSeq.size(); k++){
+					getPSSM(dnaSeq, bMotif, motifSize, k, tempPSSM);
+					getMotifScore(bMotif, motifSize, tempPSSM, motifScore, k);
+					//cout << motifScore << endl;
+					tmpScore2 += motifScore;
+				}
+			}*/
+			
 
-	for (int j=0; j<=500; j++){
-		double currentScore =0.0;
-		for (int i=0; i<motifSeq.size(); i++){
-			getPSSM(dnaSeq, motifSeq, motifSize, i, PSSM);
-			findMotif(dnaSeq, motifSeq, motifSize, i, PSSM, newPositions);
-			//currentScore += tempScore[i];
+			double currentPSSM[motifSeq[0].size()+1][5];
+			for (int k=0; k<motifSeq.size(); k++){
+				getPSSM(dnaSeq, motifSeq, motifSize, k, currentPSSM);
+				getMotifScore(motifSeq, motifSize, currentPSSM, motifScore, k);
+				//cout << motifScore << endl;
+				currentScore += motifScore;
+			}
+			//getMotifScore(motifSeq, motifSize, currentPSSM, currentScore);
 			//fout3 << currentScore << endl;
-		}
-		double currentPSSM[motifSeq[0].size()+1][5];
-		getPSSM(dnaSeq, motifSeq, motifSize, motifSeq.size()+10, currentPSSM);
-		getMotifScore(motifSeq, motifSize, currentPSSM, currentScore);
-		//fout3 << currentScore << endl;
-		if (currentScore > finalScore)
-		{
-			finalScore = currentScore;
-			finalMotif = motifSeq;
-			lastPositions = newPositions;
-		}
-		fout3 << finalScore << endl;
-	}
+			
+			if(currentScore <= finalScore){
+				iter++;
+			}
+			
+			else if(currentScore > finalScore)
+			{
+				finalScore = currentScore;
+				finalMotif = motifSeq;
+				lastPositions = newPositions;
+				iter=0;
+			}
+			fout3 << finalScore << endl;
 
+			/*ofstream fout6("alternativeMotifs.txt");
+			if(tmpScore > finalScore){
+				fout6 << tmpScore << endl;
+				for(string y:sMotif){
+					fout6<<y<<endl;
+				}
+			}*/
+
+			/*if(tmpScore2 > finalScore){
+				fout6 << tmpScore2 << endl;
+				for(string z:bMotif){
+					fout6<<z<<endl;
+				}
+			}*/
+		}
+	}
 	/*for(string y:finalMotif){
 		fout3<<y<<endl;
 	}
 	fout3 << finalScore << endl;*/
 
-	for (int i=0; i<finalMotif.size(); i++){ 
+	for (int i=0; i<finalMotif.size(); i++){
         fout3 << "Start: " << lastPositions[i].first << "\t" << "End: " << lastPositions[i].second<< "\t" << "Motif: " << finalMotif[i]<< endl;
     }
 	fout3 << "Final Score: " << finalScore << endl;
