@@ -362,8 +362,8 @@ int main(int argc, char **argv)
 {	
 	int motifSize; // Motif size
   	
-	cout<<"Enter the motif size: ";
-  	cin>> motifSize;
+	//cout<<"Enter the motif size: ";
+  	//cin>> motifSize;
 
 	// File Parsing.
 	if (argc > 1) {
@@ -401,6 +401,8 @@ int main(int argc, char **argv)
         cout << x << endl;
     }*/
 
+	motifSize = atoi(argv[2]);
+
 	for (auto &i : dnaSeq)
     	for (auto &j : i)      
         	j = toupper(j);
@@ -416,7 +418,7 @@ int main(int argc, char **argv)
 		cout<<h<<endl;
 	}*/
 	
-	ofstream fout3("finalResults.txt");
+	//ofstream cout("finalResults.txt");
 	double PSSM[motifSeq[0].size()+1][5];
 	//vector<double> tempScore;
 	
@@ -442,7 +444,7 @@ int main(int argc, char **argv)
 				findMotif(dnaSeq, motifSeq, motifSize, i, PSSM, newPositions, 0, startPos);
 				//cout << motifSeq[i] << endl;
 				//currentScore += tempScore[i];
-				//fout3 << currentScore << endl;
+				//cout << currentScore << endl;
 			}
 			if (j % 5==0) {
 				for (int i=0; i<motifSeq.size(); i++){
@@ -486,7 +488,7 @@ int main(int argc, char **argv)
 				currentScore += motifScore;
 			}
 			//getMotifScore(motifSeq, motifSize, currentPSSM, currentScore);
-			//fout3 << currentScore << endl;
+			//cout << currentScore << endl;
 			
 			if(currentScore <= finalScore){
 				iter++;
@@ -499,7 +501,7 @@ int main(int argc, char **argv)
 				lastPositions = newPositions;
 				iter=0;
 			}
-			fout3 << finalScore << endl;
+			cout << finalScore << endl;
 
 			/*ofstream fout6("alternativeMotifs.txt");
 			if(tmpScore > finalScore){
@@ -518,13 +520,13 @@ int main(int argc, char **argv)
 		}
 	}
 	/*for(string y:finalMotif){
-		fout3<<y<<endl;
+		cout<<y<<endl;
 	}
-	fout3 << finalScore << endl;*/
+	cout << finalScore << endl;*/
 
 	for (int i=0; i<finalMotif.size(); i++){
-        fout3 << "Start: " << lastPositions[i].first << "\t" << "End: " << lastPositions[i].second<< "\t" << "Motif: " << finalMotif[i]<< endl;
+        cout << "Start: " << lastPositions[i].first << "\t" << "End: " << lastPositions[i].second<< "\t" << "Motif: " << finalMotif[i]<< endl;
     }
-	fout3 << "Final Score: " << finalScore << endl;
+	cout << "Final Score: " << finalScore << endl;
     return 0;
 }
