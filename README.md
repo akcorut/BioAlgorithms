@@ -1,2 +1,2 @@
 # binf_algorithms
-Repository for the Bioinformatics Algorithms 
+Repository for various bioinformatics algorithms 
